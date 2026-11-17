@@ -29,6 +29,14 @@ iptables -P INPUT DROP                                 # Запрещаем вс
 <br>
 <br>
 
+```
+wget -O /dev/null https://speedtest.selectel.ru/100MB
+```
+
+<br>
+<br>
+<br>
+
 # wireguard
 ```
 apt update && apt upgrade -y
