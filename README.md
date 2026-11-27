@@ -1,6 +1,7 @@
 # Утилиты
 ```
-sudo mtr --report --report-cycles=50 8.8.8.8     # Посмотреть где теряются пакеты 
+sudo mtr --report --report-cycles=50 8.8.8.8           # Посмотреть где теряются пакеты 
+wget -O /dev/null https://speedtest.selectel.ru/100MB  # Проверить скорость
 ```
 
 
@@ -35,8 +36,68 @@ iptables -P INPUT DROP                                 # Запрещаем вс
 <br>
 <br>
 
+# wstunnel
 ```
-wget -O /dev/null https://speedtest.selectel.ru/100MB
+cd ~
+```
+```
+curl -fLo wstunnel.tar.gz https://github.com/erebe/wstunnel/releases/download/v11.1.0/wstunnel_11.1.0_linux_amd64.tar.gz
+```
+```
+tar -xzf wstunnel.tar.gz wstunnel
+```
+```
+chmod +x wstunnel
+```
+```
+sudo mv wstunnel /usr/local/bin
+```
+```
+wstunnel --version
+```
+
+server
+```
+read -r -n 64 path_prefix < <(LC_ALL=C tr -dc "[:alnum:]" < /dev/urandom); echo $path_prefix
+```
+```
+sudo nano /etc/systemd/system/wstunnel.service
+```
+```
+[Unit]
+Description=Wstunnel for WireGuard
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=root
+Type=exec
+ExecStart=/usr/local/bin/wstunnel server --restrict-http-upgrade-path-prefix "<secret>" --restrict-to localhost:51830 wss://0.0.0.0:443
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+```
+
+client
+```
+[Unit]
+Description=Wstunnel for WireGuard
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=root
+Type=exec
+ExecStart=/usr/local/bin/wstunnel client --http-upgrade-path-prefix "<secret>" -L "udp://0.0.0.0:51830:localhost:51830?timeout_sec=0" wss://<server>:443
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```
+sudo systemctl start wstunnel && sudo systemctl enable wstunnel
 ```
 
 <br>
